@@ -5,10 +5,14 @@ import "core:fmt"
 
 import sdl "vendor:sdl3"
 
+import "medit:util/perf"
+
 Frontend :: struct {
     running:  bool,
     window:   ^sdl.Window,
     renderer: ^sdl.Renderer,
+    perf_counter: perf.Counter,
+    perf_counter_timer: sdl.TimerID,
 }
 
 frontend_create :: proc(frontend: ^Frontend) -> (ok: bool) {
@@ -36,13 +40,22 @@ frontend_show :: proc(frontend: ^Frontend) -> (ok: bool) {
 
 WAIT_FOR_EVENT_TIMEOUT_MS :: 100
 
-frontend_handle_event :: proc(frontend: ^Frontend) {
+EventReaction :: enum {
+    RequestRender,
+}
+
+EventReactionSet :: bit_set[EventReaction]
+
+frontend_handle_event :: proc(frontend: ^Frontend) -> EventReactionSet {
     if sdl.WaitEventTimeout(nil, WAIT_FOR_EVENT_TIMEOUT_MS) {
+        perf.counter_frame_begin(&frontend.perf_counter)
         event: sdl.Event
         for sdl.PollEvent(&event) {
             frontend_dispatch_event(frontend, event)
         }
+        return {.RequestRender}
     }
+    return {}
 }
 
 frontend_dispatch_event :: proc(frontend: ^Frontend, event: sdl.Event) {
@@ -54,4 +67,13 @@ frontend_dispatch_event :: proc(frontend: ^Frontend, event: sdl.Event) {
     case .KEYMAP_CHANGED:
     case .MOUSE_WHEEL:
     }
+}
+
+frontend_clear :: proc(frontend: ^Frontend) {
+    sdl.RenderClear(frontend.renderer)
+}
+
+frontend_render_frame :: proc(frontend: ^Frontend) {
+    sdl.RenderClear(frontend.renderer)
+    perf.counter_frame_end(&frontend.perf_counter)
 }

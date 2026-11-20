@@ -1,8 +1,9 @@
 package gui
 
+import "core:time"
 import "core:fmt"
 
-import sdl "vendor:sdl3"
+import "medit:util/perf"
 
 ErrorCode :: enum {
     FailedToStart,
@@ -22,11 +23,14 @@ run :: proc() -> Error {
     frontend.running = true
     frontend_show(&frontend)
 
-    for frontend.running {
-        frontend_handle_event(&frontend)
+    counter_periodic_report_start(&frontend, 1*time.Second)
+    defer counter_periodic_report_stop(&frontend)
 
-        sdl.RenderClear(frontend.renderer)
-        sdl.RenderPresent(frontend.renderer)
+    for frontend.running {
+        reaction := frontend_handle_event(&frontend)
+        if .RequestRender not_in reaction do continue
+        frontend_clear(&frontend)
+        frontend_render_frame(&frontend)
     }
 
     return nil;
