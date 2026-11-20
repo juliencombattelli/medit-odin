@@ -7,7 +7,7 @@ main :: proc() {
     proc_handle, err := os.process_start({
         command = {
             "odin", "build", "src",
-            "-show-timings", "-collection:medit=src", "-out:medit",
+            "-debug", "-show-timings", "-collection:medit=src", "-out:medit",
         },
         stdout  = os.stdout,
         stderr  = os.stderr,
