@@ -3,9 +3,9 @@ package tui
 import "core:fmt"
 
 FailedToStart :: struct {
-    stdin_not_a_tty: bool,
+    stdin_not_a_tty:  bool,
     stdout_not_a_tty: bool,
-    msg: string,
+    msg:              string,
 }
 
 Error :: union {

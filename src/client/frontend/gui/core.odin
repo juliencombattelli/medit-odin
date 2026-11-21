@@ -8,10 +8,10 @@ import sdl "vendor:sdl3"
 import "medit:util/perf"
 
 Frontend :: struct {
-    running:  bool,
-    window:   ^sdl.Window,
-    renderer: ^sdl.Renderer,
-    perf_counter: perf.Counter,
+    running:            bool,
+    window:             ^sdl.Window,
+    renderer:           ^sdl.Renderer,
+    perf_counter:       perf.Counter,
     perf_counter_timer: sdl.TimerID,
 }
 
@@ -35,7 +35,7 @@ frontend_destroy :: proc(frontend: ^Frontend) {
 
 frontend_show :: proc(frontend: ^Frontend) -> (ok: bool) {
     sdl_ensure(sdl.ShowWindow(frontend.window), "") or_return
-    return true;
+    return true
 }
 
 WAIT_FOR_EVENT_TIMEOUT_MS :: 100
@@ -60,7 +60,8 @@ frontend_handle_event :: proc(frontend: ^Frontend) -> EventReactionSet {
 
 frontend_dispatch_event :: proc(frontend: ^Frontend, event: sdl.Event) {
     #partial switch event.type {
-    case .QUIT: frontend.running = false
+    case .QUIT:
+        frontend.running = false
     case .WINDOW_RESIZED:
     case .KEY_DOWN:
     case .TEXT_INPUT:

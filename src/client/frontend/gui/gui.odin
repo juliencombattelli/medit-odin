@@ -1,7 +1,7 @@
 package gui
 
-import "core:time"
 import "core:fmt"
+import "core:time"
 
 import "medit:util/perf"
 
@@ -23,7 +23,7 @@ run :: proc() -> Error {
     frontend.running = true
     frontend_show(&frontend)
 
-    counter_periodic_report_start(&frontend, 1*time.Second)
+    counter_periodic_report_start(&frontend, 1 * time.Second)
     defer counter_periodic_report_stop(&frontend)
 
     for frontend.running {
@@ -33,5 +33,5 @@ run :: proc() -> Error {
         frontend_render_frame(&frontend)
     }
 
-    return nil;
+    return nil
 }

@@ -16,7 +16,13 @@ sdl_ensure :: proc(
     if !result {
         file := util.relative_location(location)
         error := sdl.GetError() if len(sdl.GetError()) > 0 else "<no details>"
-        fmt.eprintfln("%s:%d: Error: %s failed: %s", file, location.line, call, error)
+        fmt.eprintfln(
+            "%s:%d: Error: %s failed: %s",
+            file,
+            location.line,
+            call,
+            error,
+        )
     }
     return result
 }
