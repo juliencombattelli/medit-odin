@@ -74,6 +74,6 @@ frontend_clear :: proc(frontend: ^Frontend) {
 }
 
 frontend_render_frame :: proc(frontend: ^Frontend) {
-    sdl.RenderClear(frontend.renderer)
+    sdl.RenderPresent(frontend.renderer)
     perf.counter_frame_end(&frontend.perf_counter)
 }
