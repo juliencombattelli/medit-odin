@@ -8,7 +8,7 @@ import sdl "vendor:sdl3"
 
 import "medit:util/perf"
 
-_counter_periodic_report_callback :: proc "c" (
+_perf_counter_periodic_report_callback :: proc "c" (
     userdata: rawptr,
     timerID: sdl.TimerID,
     interval: sdl.Uint32,
@@ -27,17 +27,17 @@ _counter_periodic_report_callback :: proc "c" (
     return interval
 }
 
-counter_periodic_report_start :: proc(
+perf_counter_periodic_report_start :: proc(
     frontend: ^Frontend,
     report_period: time.Duration,
 ) {
     frontend.perf_counter_timer = sdl.AddTimer(
         u32(time.duration_milliseconds(report_period)),
-        _counter_periodic_report_callback,
+        _perf_counter_periodic_report_callback,
         frontend,
     )
 }
 
-counter_periodic_report_stop :: proc(frontend: ^Frontend) {
+perf_counter_periodic_report_stop :: proc(frontend: ^Frontend) {
     sdl_ensure(sdl.RemoveTimer(frontend.perf_counter_timer), "SDL_RemoveTimer")
 }

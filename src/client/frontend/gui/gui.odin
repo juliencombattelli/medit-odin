@@ -3,8 +3,6 @@ package gui
 import "core:fmt"
 import "core:time"
 
-import "medit:util/perf"
-
 ErrorCode :: enum {
     FailedToStart,
 }
@@ -23,8 +21,8 @@ run :: proc() -> Error {
     frontend.running = true
     frontend_show(&frontend)
 
-    counter_periodic_report_start(&frontend, 1 * time.Second)
-    defer counter_periodic_report_stop(&frontend)
+    perf_counter_periodic_report_start(&frontend, 1 * time.Second)
+    defer perf_counter_periodic_report_stop(&frontend)
 
     for frontend.running {
         reaction := frontend_handle_event(&frontend)
