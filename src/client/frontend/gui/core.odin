@@ -4,6 +4,7 @@ package gui
 import "core:fmt"
 
 import sdl "vendor:sdl3"
+import sdl_ttf "vendor:sdl3/ttf"
 
 import "medit:util/perf"
 
@@ -13,6 +14,9 @@ Frontend :: struct {
     renderer:           ^sdl.Renderer,
     perf_counter:       perf.Counter,
     perf_counter_timer: sdl.TimerID,
+    text_engine:        ^sdl_ttf.TextEngine,
+    text_cache:         [FontId]^sdl_ttf.Text,
+    fonts:              [FontId]Font,
 }
 
 frontend_create :: proc(frontend: ^Frontend) -> (ok: bool) {
