@@ -2,3 +2,6 @@
 /medit
 # The builder binary
 /build
+# Misc tooling
+.gdb_history
+
