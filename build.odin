@@ -4,6 +4,7 @@ import "core:fmt"
 import "core:log"
 import "core:os"
 import "core:path/filepath"
+import "core:slice"
 import "core:terminal"
 import "core:terminal/ansi"
 import "core:time"
@@ -18,7 +19,7 @@ when ODIN_OS == .Windows {
 }
 
 main :: proc() {
-    context.logger = setup_logger() // The logger is intentionnally leaked
+    context.logger = setup_logger()
     if is_newer(BUILD_SRC_FILE, BUILD_EXE_FILE) {
         rebuild_builder()
         reexec_builder()
@@ -26,18 +27,23 @@ main :: proc() {
     build_medit()
 }
 
+BASE_ARGS :: []string {
+    "odin",
+    "build",
+    "src",
+    "-debug",
+    "-show-timings",
+    "-collection:medit=src",
+    "-out:medit",
+}
+
 build_medit :: proc() -> ! {
     log.info("Building medit...")
     state := process_run(
-        {
-            "odin",
-            "build",
-            "src",
-            "-debug",
-            "-show-timings",
-            "-collection:medit=src",
-            "-out:medit",
-        },
+        slice.concatenate(
+            [][]string{BASE_ARGS, os.args[1:]},
+            context.temp_allocator,
+        ),
     )
     os.exit(state.exit_code)
 }
@@ -64,7 +70,12 @@ rebuild_builder :: proc() {
 }
 
 reexec_builder :: proc() -> ! {
-    state := process_run({BUILD_EXE_FILE})
+    state := process_run(
+        slice.concatenate(
+            [][]string{{BUILD_EXE_FILE}, os.args[1:]},
+            context.temp_allocator,
+        ),
+    )
     os.exit(state.exit_code)
 }
 
@@ -78,13 +89,13 @@ setup_logger :: proc() -> log.Logger {
         opts += {.Terminal_Color}
     }
     return log.Logger {
-        procedure = build_logger_proc,
+        procedure = logger_proc,
         lowest_level = .Debug,
         options = opts,
     }
 }
 
-build_logger_proc :: proc(
+logger_proc :: proc(
     data: rawptr,
     level: log.Level,
     text: string,
