@@ -1,4 +1,3 @@
-#+private
 package gui
 
 import "core:fmt"
