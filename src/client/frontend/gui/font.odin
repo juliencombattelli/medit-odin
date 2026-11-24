@@ -23,6 +23,8 @@ Font :: struct {
 }
 
 frontend_ttf_setup :: proc(frontend: ^Frontend) -> (ok: bool) {
+    defer if !ok do frontend_ttf_teardown(frontend)
+
     sdl_ensure(sdl_ttf.Init(), "TTF_Init") or_return
 
     frontend.text_engine = sdl_ttf.CreateRendererTextEngine(frontend.renderer)

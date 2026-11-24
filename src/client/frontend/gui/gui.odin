@@ -15,8 +15,11 @@ run :: proc() -> Error {
     fmt.println("Running in GUI mode")
 
     frontend: Frontend
-    defer frontend_destroy(&frontend)
     if !frontend_create(&frontend) do return .FailedToStart
+    defer frontend_destroy(&frontend)
+
+    if !frontend_ttf_setup(&frontend) do return .FailedToStart
+    defer frontend_ttf_teardown(&frontend)
 
     frontend.running = true
     frontend_show(&frontend)

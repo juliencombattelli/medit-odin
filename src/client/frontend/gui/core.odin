@@ -20,6 +20,8 @@ Frontend :: struct {
 }
 
 frontend_create :: proc(frontend: ^Frontend) -> (ok: bool) {
+    defer if !ok do frontend_destroy(frontend)
+
     sdl_ensure(sdl.Init({.VIDEO}), "SDL_Init") or_return
 
     frontend.window = sdl.CreateWindow("medit", 800, 600, {.HIDDEN})
