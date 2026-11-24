@@ -84,3 +84,22 @@ frontend_render_frame :: proc(frontend: ^Frontend) {
     sdl.RenderPresent(frontend.renderer)
     perf.counter_frame_end(&frontend.perf_counter)
 }
+
+Position :: distinct [2]int
+Color :: distinct [4]u8
+
+frontend_draw_text :: proc(
+    frontend: ^Frontend,
+    text: string,
+    font_id: FontId,
+    position: Position,
+    color: Color,
+) {
+    if len(text) == 0 do return
+    text_cache := frontend.text_cache[font_id]
+    font := frontend.fonts[font_id]
+    sdl_ttf.SetTextFont(text_cache, font.main)
+    sdl_ttf.SetTextString(text_cache, raw_data(text), len(text))
+    sdl_ttf.SetTextColor(text_cache, color.r, color.g, color.b, color.a)
+    sdl_ttf.DrawRendererText(text_cache, f32(position.x), f32(position.y + font.line_centering_offset))
+}

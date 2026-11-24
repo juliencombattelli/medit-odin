@@ -27,10 +27,13 @@ run :: proc() -> Error {
     perf_counter_periodic_report_start(&frontend, 1 * time.Second)
     defer perf_counter_periodic_report_stop(&frontend)
 
+    greeting_text :: "😊😊😊😊😊😊ùùùù😊"
+
     for frontend.running {
         reaction := frontend_handle_event(&frontend)
         if .RequestRender not_in reaction do continue
         frontend_clear(&frontend)
+        frontend_draw_text(&frontend, greeting_text, .Editor, {0, 0}, {255, 255, 255, 255})
         frontend_render_frame(&frontend)
     }
 
