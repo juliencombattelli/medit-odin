@@ -121,9 +121,9 @@ frontend_load_font :: proc(frontend: ^Frontend, font_id: FontId) {
         width_factor,
     )
     if font.emoji == nil {
-        fmt.eprintfln("Warning: failed to load fallback emoji font: %s", sdl.GetError());
+        fmt.eprintfln("Warning: failed to load fallback emoji font: %s", sdl.GetError())
     } else if !sdl_ttf.AddFallbackFont(font.main, font.emoji) {
-            fmt.eprintfln("Warning: failed to add fallback emoji font: %s", sdl.GetError());
+            fmt.eprintfln("Warning: failed to add fallback emoji font: %s", sdl.GetError())
     }
 }
 

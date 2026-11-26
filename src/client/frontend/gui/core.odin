@@ -7,9 +7,9 @@ import sdl "vendor:sdl3"
 import sdl_ttf "vendor:sdl3/ttf"
 
 import "medit:util/perf"
+import kb "medit:client/keybind"
 
 Frontend :: struct {
-    running:            bool,
     window:             ^sdl.Window,
     renderer:           ^sdl.Renderer,
     perf_counter:       perf.Counter,
@@ -17,6 +17,9 @@ Frontend :: struct {
     text_engine:        ^sdl_ttf.TextEngine,
     text_cache:         [FontId]^sdl_ttf.Text,
     fonts:              [FontId]Font,
+    // TODO move into a core editor struct
+    running:            bool,
+    keybinds:           kb.Keybinds,
 }
 
 frontend_create :: proc(frontend: ^Frontend) -> (ok: bool) {
@@ -57,19 +60,22 @@ frontend_handle_event :: proc(frontend: ^Frontend) -> EventReactionSet {
         perf.counter_frame_begin(&frontend.perf_counter)
         event: sdl.Event
         for sdl.PollEvent(&event) {
-            frontend_dispatch_event(frontend, event)
+            frontend_dispatch_event(frontend, &event)
         }
         return {.RequestRender}
     }
     return {}
 }
 
-frontend_dispatch_event :: proc(frontend: ^Frontend, event: sdl.Event) {
+frontend_dispatch_event :: proc(frontend: ^Frontend, event: ^sdl.Event) {
     #partial switch event.type {
     case .QUIT:
         frontend.running = false
     case .WINDOW_RESIZED:
     case .KEY_DOWN:
+        keybind_event := sdl3_keybind_translate_event(event)
+        if handled := kb.handle_event(&frontend.keybinds, &keybind_event); handled == true do break
+        // TODO handle key press not handled by keybinds (unbindable keys)
     case .TEXT_INPUT:
     case .KEYMAP_CHANGED:
     case .MOUSE_WHEEL:
