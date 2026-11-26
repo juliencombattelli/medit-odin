@@ -30,6 +30,61 @@ _write :: proc "contextless" (data: string) -> (ok: bool) {
     return true
 }
 
+// ReadFile may return several bytes at once (e.g. a multi-byte character):
+// the extra ones are served from here on the next calls.
+@(private = "file")
+g_in_buf: [64]u8
+@(private = "file")
+g_in_pos, g_in_len: int
+
+// Returns a `ResizeEvent` for console resize records (ENABLE_WINDOW_INPUT),
+// coalescing consecutive ones.
+_read :: proc() -> (ReadEvent, ReadError) {
+    if g_in_pos < g_in_len {
+        g_in_pos += 1
+        return ByteEvent(g_in_buf[g_in_pos - 1]), .None
+    }
+    rec: windows.INPUT_RECORD
+    n: windows.DWORD
+    for {
+        if windows.WaitForSingleObject(g_stdin, windows.INFINITE) != windows.WAIT_OBJECT_0 {
+            return nil, .Unknown
+        }
+        if !windows.PeekConsoleInputW(g_stdin, &rec, 1, &n) do return nil, .Unknown
+        if n == 0 do continue
+        is_text :=
+            rec.EventType == .KEY_EVENT &&
+            bool(rec.Event.KeyEvent.bKeyDown) &&
+            rec.Event.KeyEvent.uChar.UnicodeChar != 0
+        if is_text do break
+        // Consume records ReadFile would skip (focus, mouse, key releases...),
+        // else it would block until the next key press
+        if !windows.ReadConsoleInputW(g_stdin, &rec, 1, &n) do return nil, .Unknown
+        if rec.EventType != .WINDOW_BUFFER_SIZE_EVENT do continue
+        for windows.PeekConsoleInputW(g_stdin, &rec, 1, &n) &&
+            n == 1 &&
+            rec.EventType == .WINDOW_BUFFER_SIZE_EVENT {
+            windows.ReadConsoleInputW(g_stdin, &rec, 1, &n)
+        }
+        return ResizeEvent{}, .None
+    }
+    read: windows.DWORD
+    if !windows.ReadFile(g_stdin, &g_in_buf, len(g_in_buf), &read, nil) {
+        return nil, .Unknown
+    }
+    if read == 0 do return EofEvent{}, .None
+    g_in_pos, g_in_len = 1, int(read)
+    return ByteEvent(g_in_buf[0]), .None
+}
+
+_get_size :: proc "contextless" () -> (cols, rows: int, ok: bool) {
+    info: windows.CONSOLE_SCREEN_BUFFER_INFO
+    if !windows.GetConsoleScreenBufferInfo(g_stdout, &info) do return
+    // srWindow is the visible area, dwSize includes the scrollback
+    w := info.srWindow
+    return int(w.Right - w.Left) + 1, int(w.Bottom - w.Top) + 1, true
+}
+
 _save_mode :: proc "contextless" () -> (ok: bool) {
     stdin := windows.GetStdHandle(windows.STD_INPUT_HANDLE)
     stdout := windows.GetStdHandle(windows.STD_OUTPUT_HANDLE)
@@ -42,9 +97,11 @@ _save_mode :: proc "contextless" () -> (ok: bool) {
 }
 
 _apply_raw_mode :: proc "contextless" () -> (ok: bool) {
-    // Disable line buffering, echo, and Ctrl+C signal processing
+    // Disable line buffering, echo, and Ctrl+C signal processing.
+    // Report console resizes as input records, turned into `ResizeEvent`s by
+    // `_read`.
     in_mode :=
-        g_orig_in_mode &~
+        (g_orig_in_mode | windows.ENABLE_WINDOW_INPUT) &~
         (windows.ENABLE_ECHO_INPUT |
                 windows.ENABLE_LINE_INPUT |
                 windows.ENABLE_PROCESSED_INPUT)

@@ -3,6 +3,7 @@ package tui
 import "core:fmt"
 
 import "medit:client/frontend/tui/term"
+import kb "medit:client/keybind"
 
 FailedToStart :: struct {
     stdin_not_a_tty:  bool,
@@ -24,6 +25,23 @@ run :: proc() -> Error {
         return FailedToStart{msg = "failed to initialise the terminal"}
     }
     defer term.deinit()
+
+    keybinds := kb.Keybinds{}
+
+    running := true
+    for running {
+        event := term.read() or_break
+        switch type in event {
+            case term.ByteEvent:
+                fmt.printf("Received byte %d\r\n", event)
+                // kb_event := kb.Event{...}
+                // kb.handle_event(&keybinds)
+            case term.ResizeEvent:
+                fmt.printf("Received resize event\r\n")
+            case term.EofEvent:
+                fmt.printf("Received EOF\r\n")
+        }
+    }
 
     return nil
 }

@@ -16,7 +16,8 @@ g_handlers_installed: bool
 // Saves the terminal state, then enters raw mode and the alternate screen with
 // a hidden cursor.
 // Also registers `deinit` to run on libc `exit`, fatal/termination signals
-// (POSIX) and console close events / unhandled exceptions (Windows).
+// (POSIX) and console close events / unhandled exceptions (Windows), and on
+// POSIX a SIGWINCH handler feeding `read`'s resize events.
 // Panics must be handled by the caller through `context.assertion_failure_proc`
 // using `assertion_failure_proc` below.
 // Odin's `os.exit` may bypass all of these: as of Odin 2026.10, on Linux
@@ -68,6 +69,29 @@ deinit :: proc "contextless" () {
 // (no buffering, locks or allocations).
 write :: proc "contextless" (data: string) -> (ok: bool) {
     return _write(data)
+}
+
+ByteEvent :: distinct byte
+ResizeEvent :: struct {}
+EofEvent :: struct {}
+
+ReadEvent :: union {
+    ByteEvent,
+    ResizeEvent,
+    EofEvent,
+}
+
+ReadError :: enum {
+    None,
+    Unknown,
+}
+
+read :: proc() -> (ReadEvent, ReadError) {
+    return _read()
+}
+
+get_size :: proc "contextless" () -> (cols, rows: int, ok: bool) {
+    return _get_size()
 }
 
 show_cursor :: proc "contextless" () {
