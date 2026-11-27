@@ -50,10 +50,8 @@ _read :: proc() -> (ReadEvent, ReadError) {
         if fds[0].revents != {} {
             b: u8
             switch posix.read(posix.STDIN_FILENO, &b, 1) {
-            case 1:
-                return ByteEvent(b), .None
-            case 0:
-                return EofEvent{}, .None
+            case 1: return ByteEvent(b), .None
+            case 0: return EofEvent{}, .None
             case:
                 if posix.errno() == .EINTR || posix.errno() == .EAGAIN do continue
                 return nil, .Unknown
@@ -119,7 +117,7 @@ _apply_raw_mode :: proc "contextless" () -> (ok: bool) {
     }
 
     raw.c_oflag -= {
-        .OPOST,  // Disable output post-processing (e.g. \n -> \r\n)
+        .OPOST, // Disable output post-processing (e.g. \n -> \r\n)
     }
 
     // Read returns as soon as 1 byte is available, with no timeout

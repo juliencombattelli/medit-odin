@@ -47,7 +47,8 @@ _read :: proc() -> (ReadEvent, ReadError) {
     rec: windows.INPUT_RECORD
     n: windows.DWORD
     for {
-        if windows.WaitForSingleObject(g_stdin, windows.INFINITE) != windows.WAIT_OBJECT_0 {
+        if windows.WaitForSingleObject(g_stdin, windows.INFINITE) !=
+           windows.WAIT_OBJECT_0 {
             return nil, .Unknown
         }
         if !windows.PeekConsoleInputW(g_stdin, &rec, 1, &n) do return nil, .Unknown

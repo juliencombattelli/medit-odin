@@ -6,8 +6,8 @@ import "core:fmt"
 import sdl "vendor:sdl3"
 import sdl_ttf "vendor:sdl3/ttf"
 
-import "medit:util/perf"
 import kb "medit:client/keybind"
+import "medit:util/perf"
 
 Frontend :: struct {
     window:             ^sdl.Window,
@@ -69,8 +69,7 @@ frontend_handle_event :: proc(frontend: ^Frontend) -> EventReactionSet {
 
 frontend_dispatch_event :: proc(frontend: ^Frontend, event: ^sdl.Event) {
     #partial switch event.type {
-    case .QUIT:
-        frontend.running = false
+    case .QUIT: frontend.running = false
     case .WINDOW_RESIZED:
     case .KEY_DOWN:
         keybind_event := key_translate_event(event)
@@ -107,5 +106,9 @@ frontend_draw_text :: proc(
     sdl_ttf.SetTextFont(text_cache, font.main)
     sdl_ttf.SetTextString(text_cache, raw_data(text), len(text))
     sdl_ttf.SetTextColor(text_cache, color.r, color.g, color.b, color.a)
-    sdl_ttf.DrawRendererText(text_cache, f32(position.x), f32(position.y + font.line_centering_offset))
+    sdl_ttf.DrawRendererText(
+        text_cache,
+        f32(position.x),
+        f32(position.y + font.line_centering_offset),
+    )
 }

@@ -47,8 +47,7 @@ run :: proc() -> Error {
     running := true
 
     keybinds := kb.Keybinds{}
-    kb.bind(
-        &keybinds, .Q, {.Ctrl},
+    kb.bind(&keybinds, .Q, {.Ctrl},
         proc(userdata: rawptr) {
             fmt.eprintln("Exiting!")
             (cast(^bool)userdata)^ = false

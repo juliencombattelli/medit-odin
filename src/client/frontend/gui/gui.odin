@@ -33,7 +33,13 @@ run :: proc() -> Error {
         reaction := frontend_handle_event(&frontend)
         if .RequestRender not_in reaction do continue
         frontend_clear(&frontend)
-        frontend_draw_text(&frontend, greeting_text, .Editor, {0, 0}, {255, 255, 255, 255})
+        frontend_draw_text(
+            &frontend,
+            greeting_text,
+            .Editor,
+            {0, 0},
+            {255, 255, 255, 255},
+        )
         frontend_render_frame(&frontend)
     }
 

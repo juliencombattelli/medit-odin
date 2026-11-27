@@ -25,24 +25,18 @@ main :: proc() {
     case .auto:
         switch gui.run() {
         case .FailedToStart: // fallback to tui
-        case nil:
-            os.exit(0)
-        case:
-            os.exit(1)
+        case nil: os.exit(0)
+        case: os.exit(1)
         }
         switch err in tui.run() {
         case tui.FailedToStart:
             fmt.printfln("TUI not available: %s", err.msg)
             fmt.println("Neither the GUI nor the TUI is available, exiting.")
             os.exit(1)
-        case nil:
-            os.exit(0)
-        case:
-            os.exit(1)
+        case nil: os.exit(0)
+        case: os.exit(1)
         }
-    case .gui:
-        gui.run()
-    case .tui:
-        tui.run()
+    case .gui: gui.run()
+    case .tui: tui.run()
     }
 }

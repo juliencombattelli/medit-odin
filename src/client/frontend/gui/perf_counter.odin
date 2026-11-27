@@ -18,7 +18,8 @@ _perf_counter_periodic_report_callback :: proc "c" (
     if frontend.perf_counter.frame_count == 0 {
         fmt.eprintfln("Active frames: %d", frontend.perf_counter.frame_count)
     } else {
-        fmt.eprintfln("Active frames: %d | Avg frame time: %.2f",
+        fmt.eprintfln(
+            "Active frames: %d | Avg frame time: %.2f",
             frontend.perf_counter.frame_count,
             perf.counter_frame_time_average(&frontend.perf_counter),
         )
