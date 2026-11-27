@@ -95,7 +95,7 @@ get :: proc(keybinds: ^Keybinds, key: Key, mods: KeyMods) -> ^KeybindEntry {
 }
 
 handle_event :: proc(keybinds: ^Keybinds, event: ^Event) -> (handled: bool) {
-    fmt.printfln("[DEBUG] Key: %s", event.key)
+    fmt.eprintfln("[DEBUG] Key: %s", event.key)
     entry := get(keybinds, event.key, event.modifiers)
     if entry != nil && entry.callback != nil {
         entry.callback(entry.userdata)

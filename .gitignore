@@ -2,6 +2,8 @@
 /medit
 # The builder binary
 /build
+# The default log file
+medit.log
 # Misc tooling
 .gdb_history
 

@@ -73,7 +73,7 @@ frontend_dispatch_event :: proc(frontend: ^Frontend, event: ^sdl.Event) {
         frontend.running = false
     case .WINDOW_RESIZED:
     case .KEY_DOWN:
-        keybind_event := sdl3_keybind_translate_event(event)
+        keybind_event := key_translate_event(event)
         if handled := kb.handle_event(&frontend.keybinds, &keybind_event); handled == true do break
         // TODO handle key press not handled by keybinds (unbindable keys)
     case .TEXT_INPUT:

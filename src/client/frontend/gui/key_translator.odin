@@ -2,31 +2,29 @@ package gui
 
 import sdl "vendor:sdl3"
 
-import "medit:client/keybind"
+import kb "medit:client/keybind"
 
-sdl3_keybind_translate_event :: proc(native_event: rawptr) -> (event: keybind.Event) {
+key_translate_event :: proc(sdl_event: ^sdl.Event) -> (event: kb.Event) {
     event = {}
 
-    if native_event == nil do return
+    if sdl_event == nil do return
 
-    event.platform_data = native_event
-
-    sdl_event := transmute(^sdl.Event)native_event
+    event.platform_data = sdl_event
 
     #partial switch sdl_event.type {
     case .KEY_DOWN: event.kind = .Repeat if sdl_event.key.repeat else .Press
-    case .KEY_UP:   event.kind = .Release
-    case:           return
+    case .KEY_UP: event.kind = .Release
+    case: return
     }
 
-    event.key = sdl3_keycode_to_keybind_key(sdl_event.key.key)
+    event.key = _sdl3_keycode_to_keybind_key(sdl_event.key.key)
     event.scancode = cast(u32)sdl_event.key.scancode // TODO safe cast
-    event.modifiers = sdl3_keymod_to_keybind_mod(sdl_event.key.mod)
+    event.modifiers = _sdl3_keymod_to_keybind_mod(sdl_event.key.mod)
     return
 }
 
 @(private = "file")
-sdl3_keycode_to_keybind_key :: proc(keycode: sdl.Keycode) -> keybind.Key {
+_sdl3_keycode_to_keybind_key :: proc(keycode: sdl.Keycode) -> kb.Key {
     // odinfmt: disable
     switch keycode {
         case sdl.K_A:               return .A;
@@ -154,16 +152,16 @@ sdl3_keycode_to_keybind_key :: proc(keycode: sdl.Keycode) -> keybind.Key {
 }
 
 @(private = "file")
-sdl3_keymod_to_keybind_mod :: proc(mods: sdl.Keymod) -> keybind.KeyMods {
-    result := keybind.KeyMods{}
+_sdl3_keymod_to_keybind_mod :: proc(mods: sdl.Keymod) -> kb.KeyMods {
+    result := kb.KeyMods{}
     if mods & sdl.KMOD_SHIFT != {} {
-        result += {keybind.KeyMod.Shift}
+        result += {kb.KeyMod.Shift}
     }
     if mods & sdl.KMOD_CTRL != {} {
-        result += {keybind.KeyMod.Ctrl}
+        result += {kb.KeyMod.Ctrl}
     }
     if mods & sdl.KMOD_ALT != {} {
-        result += {keybind.KeyMod.Alt}
+        result += {kb.KeyMod.Alt}
     }
     return result
 }
